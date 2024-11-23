@@ -4,18 +4,33 @@
 ## File Structure
 
 ## Features
-- load devices from csv button to import (headers: hostname, ip, device_type)
-- initialize device list, creating device objects (automatically detects device type)
-- use netmiko to connect to devices when needed
-- create a thread for each device
-- 'device list'
-- 'vlan discovery'
-- 'network discovery'
-- 'local routes'
--  'audit'
-- 'reports'
-- 'crawler'
+- Subnet Calculator
+- Network Validator
+- VLAN Discovery
+- Network Discovery
+- Local Routes
+- Audit
+- Reports
+- Crawler
+- Device Manager
 
-- Tkinter GUI
-- threading
+## Requirements
+- Python 3.10+
+- pip
+- python-netmiko
+- python-nmap
+- python-pyyaml
+
+## Installation
+1. Clone the repository
+2. Install the requirements
+3. pip install -r requirements.txt
+
+## Usage
+1. Load devices from csv button to import (headers: hostname, ip, device_type)
+2. Can connect to devices using netmiko
+3. Run features from the menu
+
+## Notes
+- WIP, Cisco only support
 
