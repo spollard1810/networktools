@@ -11,6 +11,7 @@ from src.utils.credentials_manager import CredentialsManager
 from .widgets import DeviceTreeView
 from .dialogs import LoginDialog
 from src.core.connector import create_connection
+from src.features.custom_command import CustomCommandTab
 
 class MainWindow:
     def __init__(self, root):
@@ -43,6 +44,7 @@ class MainWindow:
         """Create and add all tabs to the notebook"""
         self.tabs = {
             "Devices": self._create_devices_tab(),
+            "Custom Commands": CustomCommandTab(self.notebook, self.device_manager),
             "VLAN Discovery": VlanDiscoveryTab(self.notebook, self.device_manager),
             "Network Discovery": NetworkDiscoveryTab(self.notebook, self.device_manager),
             "Local Routes": RouteAnalyzerTab(self.notebook, self.device_manager),
