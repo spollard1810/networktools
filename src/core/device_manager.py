@@ -28,6 +28,14 @@ class DeviceManager:
         # Wireless Controllers
         (r'^(air-ct|c9800)', 'cisco_wlc'),
     ]
+    
+    NETMIKO_TYPE_MAP = {
+        'cisco_ios_xe': 'cisco_xe',
+        'cisco_ios': 'cisco_ios',
+        'cisco_nxos': 'cisco_nxos',
+        'cisco_asa': 'cisco_asa',
+        'cisco_wlc': 'cisco_wlc'
+    }
     DEFAULT_TYPE = 'cisco_ios'
 
     def __init__(self):
@@ -38,10 +46,13 @@ class DeviceManager:
         self.devices = []
         
         for data in device_data:
+            # Get model from either 'model' or 'device_model' column, default to empty string
+            model = data.get('model', data.get('device_model', ''))
+            
             device = Device(
                 hostname=data['hostname'],
                 ip=data['ip'],
-                device_type=self._detect_device_type(data['model'])
+                device_type=self._detect_device_type(model)
             )
             self.devices.append(device)
         return self.devices
@@ -49,7 +60,7 @@ class DeviceManager:
     def connect_devices(self, selected_devices: List[Device]) -> List[Device]:
         def connect_device(device: Device):
             device_params = {
-                'device_type': device.device_type,
+                'device_type': self.NETMIKO_TYPE_MAP.get(device.device_type, 'cisco_ios'),
                 'ip': device.ip,
                 'username': device.username,
                 'password': device.password,
