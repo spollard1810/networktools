@@ -1,6 +1,5 @@
 # NETWORKTOOLS
-# Networking toolkit for internal use
-
+# Networking toolkit 
 ## File Structure
 
 ## Features
