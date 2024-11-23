@@ -1,0 +1,27 @@
+basic file structure
+networktools/
+├── src/
+│   ├── __init__.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── device.py         # Device class and device management
+│   │   └── connector.py      # Netmiko connection handling
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── csv_handler.py    # CSV import/export functionality
+│   │   └── threader.py       # Threading utilities
+│   ├── features/
+│   │   ├── __init__.py
+│   │   ├── vlan_discovery.py
+│   │   ├── network_discovery.py
+│   │   ├── route_analyzer.py
+│   │   ├── auditor.py
+│   │   ├── reporter.py
+│   │   └── crawler.py
+│   └── gui/
+│       ├── __init__.py
+│       ├── main_window.py    # Main Tkinter window
+│       └── widgets.py        # Custom widgets
+├── requirements.txt
+├── main.py
+└── README.md

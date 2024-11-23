@@ -1,0 +1,18 @@
+rules:
+  - name: "Weak Password Policy"
+    command: "show running-config | include password"
+    pattern: "password.*0"
+    severity: "High"
+    description: "Weak password encryption detected"
+
+  - name: "Telnet Enabled"
+    command: "show running-config | include line vty"
+    pattern: "transport input telnet"
+    severity: "Critical"
+    description: "Telnet access is enabled"
+
+  - name: "SNMP Public Community"
+    command: "show running-config | include snmp-server community"
+    pattern: "public"
+    severity: "High"
+    description: "SNMP using public community string"

@@ -1,0 +1,24 @@
+# Network Boundaries Configuration
+# 
+# allowed_subnets: List of IP ranges that are safe to crawl
+#   - Use CIDR notation (e.g., '192.168.1.0/24')
+#   - Devices outside these ranges will be skipped
+#
+# protected_devices: List of devices that should not be accessed
+#   - Use exact hostnames
+#   - These devices will be shown in red in the network map
+#   - No automatic connections will be made to these devices
+#
+
+allowed_subnets:
+  - 10.0.0.0/8      # RFC1918 Private Network
+  - 172.16.0.0/12   # RFC1918 Private Network
+  - 192.168.0.0/16  # RFC1918 Private Network
+
+protected_devices:
+  # Example protected devices (comment out or modify as needed)
+  - CORE-SW01        # Core Switch
+  - CORE-RTR01       # Core Router
+  - FIREWALL01       # Main Firewall
+  - DC-CORE-01       # Data Center Core
+  - PROD-FW-01       # Production Firewall
