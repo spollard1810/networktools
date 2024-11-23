@@ -59,8 +59,14 @@ class DeviceManager:
 
     def connect_devices(self, selected_devices: List[Device]) -> List[Device]:
         def connect_device(device: Device):
+            # Add debug prints here
+            print(f"Device {device.hostname}:")
+            print(f"Original device_type: {device.device_type}")
+            netmiko_type = self.NETMIKO_TYPE_MAP.get(device.device_type, 'cisco_ios')
+            print(f"Mapped to Netmiko type: {netmiko_type}")
+            
             device_params = {
-                'device_type': self.NETMIKO_TYPE_MAP.get(device.device_type, 'cisco_ios'),
+                'device_type': netmiko_type,
                 'ip': device.ip,
                 'username': device.username,
                 'password': device.password,
