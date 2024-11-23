@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from src.core.device import Device
-from typing import List, Callable
+from typing import List, Callable, Optional
+import logging
 
 class DeviceTreeView(ttk.Treeview):
     def __init__(self, parent, **kwargs):
@@ -11,6 +12,9 @@ class DeviceTreeView(ttk.Treeview):
             show="headings",
             **kwargs
         )
+        
+        # Add logging
+        self.logger = logging.getLogger(__name__)
         
         # Configure headers
         headers = {
@@ -50,11 +54,19 @@ class DeviceTreeView(ttk.Treeview):
                 "Disconnected"
             ))
 
-    def update_device_status(self, hostname: str, status: str):
-        for item in self.get_children():
-            if self.item(item)['values'][0] == hostname:
-                self.set(item, "Status", status)
-                break
+    def update_device_status(self, hostname: str, status: str) -> bool:
+        """Update device status with error handling
+        Returns: True if successful, False otherwise"""
+        try:
+            for item in self.get_children():
+                if self.item(item)['values'][0] == hostname:
+                    self.set(item, "Status", status)
+                    return True
+            self.logger.warning(f"Device {hostname} not found in tree")
+            return False
+        except Exception as e:
+            self.logger.error(f"Error updating status for {hostname}: {str(e)}")
+            return False
 
     def clear(self):
         for item in self.get_children():
@@ -64,8 +76,12 @@ class FeatureTab(ttk.Frame):
     def __init__(self, parent, device_manager, **kwargs):
         super().__init__(parent, **kwargs)
         self.device_manager = device_manager
+        self.logger = logging.getLogger(self.__class__.__name__)
         
-        # Create standard layout
+        # Add cancel operation support
+        self.current_operation = None
+        self.cancel_requested = False
+        
         self._create_widgets()
         self._configure_grid()
 
@@ -91,6 +107,15 @@ class FeatureTab(ttk.Frame):
             command=self.run_operation
         )
         self.run_button.pack(side=tk.LEFT)
+        
+        # Add cancel button
+        self.cancel_button = ttk.Button(
+            self.button_frame,
+            text="Cancel",
+            command=self.cancel_operation,
+            state=tk.DISABLED
+        )
+        self.cancel_button.pack(side=tk.LEFT, padx=5)
 
         # Results area
         self.results_frame = ttk.LabelFrame(self, text="Results", padding="5")
@@ -133,6 +158,23 @@ class FeatureTab(ttk.Frame):
         self.results_text.insert(tk.END, f"{result}\n")
         self.results_text.see(tk.END)
 
+    def cancel_operation(self):
+        """Request cancellation of current operation"""
+        self.cancel_requested = True
+        self.update_status("Cancelling operation...")
+        self.cancel_button.configure(state=tk.DISABLED)
+
+    def start_operation(self):
+        """Setup for starting an operation"""
+        self.cancel_requested = False
+        self.cancel_button.configure(state=tk.NORMAL)
+        self.run_button.configure(state=tk.DISABLED)
+
+    def finish_operation(self):
+        """Cleanup after operation completes"""
+        self.cancel_button.configure(state=tk.DISABLED)
+        self.run_button.configure(state=tk.NORMAL)
+
 class VlanDiscoveryTab:
-    # Your VlanDiscoveryTab implementation here
+   #unused
     pass

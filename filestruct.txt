@@ -18,10 +18,12 @@ networktools/
 │   │   ├── auditor.py
 │   │   ├── reporter.py
 │   │   └── crawler.py
+│   │   └── subnet_calc.py
 │   └── gui/
 │       ├── __init__.py
 │       ├── main_window.py    # Main Tkinter window
 │       └── widgets.py        # Custom widgets
+|       
 ├── requirements.txt
 ├── main.py
 └── README.md
