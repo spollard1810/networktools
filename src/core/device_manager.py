@@ -3,8 +3,33 @@ from .device import Device
 from .connector import create_connection
 from src.utils.csv_handler import load_devices_from_csv
 from src.utils.threader import run_threaded_operation
+import re
 
 class DeviceManager:
+    DEVICE_TYPE_PATTERNS = [
+        # Catalyst 9000 Series (IOS-XE)
+        (r'^c9[0-9]+', 'cisco_ios_xe'),    # C9200, C9300, C9400, C9500, C9600
+        
+        # Catalyst 3000 Series (IOS-XE)
+        (r'^c3[68][0-9]+', 'cisco_ios_xe'), # C3650, C3850
+        
+        # ISR/ASR Routers (IOS-XE)
+        (r'^(isr4|asr10[0-9]+)', 'cisco_ios_xe'),
+        
+        # Nexus Series (NX-OS)
+        (r'^n(3|5|7|9)k', 'cisco_nxos'),
+        
+        # Legacy Catalyst (IOS)
+        (r'^(c2[69][0-9]+|c3560)', 'cisco_ios'),  # C2960, C3560
+        
+        # ASA Firewalls
+        (r'^asa', 'cisco_asa'),
+        
+        # Wireless Controllers
+        (r'^(air-ct|c9800)', 'cisco_wlc'),
+    ]
+    DEFAULT_TYPE = 'cisco_ios'
+
     def __init__(self):
         self.devices: List[Device] = []
 
@@ -16,7 +41,7 @@ class DeviceManager:
             device = Device(
                 hostname=data['hostname'],
                 ip=data['ip'],
-                device_type=data['device_type']
+                device_type=self._detect_device_type(data['model'])
             )
             self.devices.append(device)
         return self.devices
@@ -41,3 +66,13 @@ class DeviceManager:
         """Update the device tree in the main window"""
         if hasattr(self, 'device_tree'):
             self.device_tree.update_devices(self.devices)
+
+    def _detect_device_type(self, model: str) -> str:
+        """
+        Detect Cisco device type based on model using regex patterns
+        """
+        model = model.lower().strip()
+        for pattern, device_type in self.DEVICE_TYPE_PATTERNS:
+            if re.match(pattern, model, re.IGNORECASE):
+                return device_type
+        return self.DEFAULT_TYPE
