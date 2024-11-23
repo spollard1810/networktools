@@ -9,9 +9,11 @@ from src.features.reporter import ReporterTab
 from src.features.crawler import CrawlerTab
 from src.utils.credentials_manager import CredentialsManager
 from .widgets import DeviceTreeView
-from .dialogs import LoginDialog
+from .dialogs import LoginDialog, LoadingDialog
 from src.core.connector import create_connection
 from src.features.custom_command import CustomCommandTab
+import threading
+import queue
 
 class MainWindow:
     def __init__(self, root):
@@ -132,19 +134,55 @@ class MainWindow:
             if device:
                 device.username = username
                 device.password = password
-                # Print debug info
-                print(f"Connecting to {device.hostname}:")
-                print(f"Device type: {device.device_type}")
-                print(f"IP: {device.ip}")
                 selected_devices.append(device)
 
-        # Connect devices using DeviceManager
-        connected_devices = self.device_manager.connect_devices(selected_devices)
+        # Create queue for results
+        result_queue = queue.Queue()
         
-        # Update status in tree
-        for device in connected_devices:
-            status = "Connected" if device.connection else "Connection Failed"
-            self.device_tree.update_device_status(device.hostname, status)
+        # Create loading dialog
+        loading_dialog = LoadingDialog(
+            self.root,
+            title="Connecting to Devices",
+            message=f"Connecting to {len(selected_devices)} devices..."
+        )
+
+        def connection_thread():
+            try:
+                # Connect devices using DeviceManager
+                connected_devices = self.device_manager.connect_devices(selected_devices)
+                result_queue.put(("success", connected_devices))
+            except Exception as e:
+                result_queue.put(("error", str(e)))
+            finally:
+                # Schedule dialog destruction in main thread
+                self.root.after(0, loading_dialog.destroy)
+
+        def check_queue():
+            try:
+                result_type, result_data = result_queue.get_nowait()
+                if result_type == "success":
+                    # Update status in tree
+                    for device in result_data:
+                        status = "Connected" if device.connection else "Connection Failed"
+                        self.device_tree.update_device_status(device.hostname, status)
+                else:
+                    # Show error message
+                    tk.messagebox.showerror(
+                        "Connection Error",
+                        f"Error connecting to devices: {result_data}"
+                    )
+            except queue.Empty:
+                # If queue is empty and thread is still running, check again
+                if thread.is_alive():
+                    self.root.after(100, check_queue)
+
+        # Start connection thread
+        thread = threading.Thread(target=connection_thread)
+        thread.daemon = True
+        thread.start()
+
+        # Start checking for results
+        self.root.after(100, check_queue)
 
     def _select_all_devices(self):
         """Select all devices in the tree"""

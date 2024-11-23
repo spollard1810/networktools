@@ -218,3 +218,36 @@ class RuleDialog(tk.Toplevel):
 
     def _cancel(self):
         self.destroy() 
+
+class LoadingDialog(tk.Toplevel):
+    def __init__(self, parent, title="Please Wait", message="Operation in progress..."):
+        super().__init__(parent)
+        self.title(title)
+        
+        # Remove window decorations and make it modal
+        self.transient(parent)
+        self.grab_set()
+        
+        # Remove minimize/maximize buttons
+        self.resizable(False, False)
+        
+        # Create widgets
+        self.frame = ttk.Frame(self, padding="20")
+        self.frame.grid(row=0, column=0)
+        
+        self.label = ttk.Label(self.frame, text=message)
+        self.label.grid(row=0, column=0, pady=(0, 10))
+        
+        self.progress = ttk.Progressbar(
+            self.frame, 
+            mode='indeterminate', 
+            length=200
+        )
+        self.progress.grid(row=1, column=0)
+        self.progress.start(10)
+        
+        # Center dialog
+        self.geometry("+%d+%d" % (
+            parent.winfo_rootx() + 50,
+            parent.winfo_rooty() + 50
+        ))

@@ -103,6 +103,8 @@ class AuditorTab(FeatureTab):
                   command=self._edit_rule).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Delete Rule", 
                   command=self._delete_rule).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Run Audit", 
+                  command=self.run_operation).pack(side=tk.LEFT, padx=5)
         
         self._load_rules()
 

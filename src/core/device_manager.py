@@ -70,6 +70,7 @@ class DeviceManager:
                 'ip': device.ip,
                 'username': device.username,
                 'password': device.password,
+                'secret': device.password,  # Using same password for enable
                 'timeout': 10,
                 'fast_cli': True,
                 'session_timeout': 60
@@ -78,6 +79,9 @@ class DeviceManager:
                 device.connection = create_connection(device_params)
                 if device.connection:
                     print(f"Successfully connected to {device.hostname}")
+                    # Enter enable mode
+                    device.connection.enable()
+                    print(f"Entered enable mode on {device.hostname}")
                 else:
                     print(f"Failed to connect to {device.hostname}")
             except Exception as e:
