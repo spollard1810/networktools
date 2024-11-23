@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from src.gui.widgets import FeatureTab
 from src.utils.threader import run_threaded_operation
-from src.core.device import Device, create_connection
+from src.core.device import Device
+from src.core.connector import create_connection
 import re
 from typing import Dict, Set, Optional
 from src.utils.network_validator import NetworkValidator
+import yaml
 
 class CrawlerTab(FeatureTab):
     def __init__(self, parent, device_manager):
@@ -44,6 +46,14 @@ class CrawlerTab(FeatureTab):
         
         # Configure grid weights for network frame
         self.grid_rowconfigure(3, weight=1)
+
+        # Add Configure Rules button
+        self.config_button = ttk.Button(
+            control_frame,
+            text="Configure Rules",
+            command=self._show_rules_dialog
+        )
+        self.config_button.pack(side=tk.LEFT, padx=5)
 
     def _parse_cdp_output(self, output: str) -> list:
         """Parse CDP neighbor details output"""
@@ -227,3 +237,15 @@ class CrawlerTab(FeatureTab):
         self.device_manager.update_device_tree()
         
         self.update_status("Network discovery complete")
+
+    def _show_rules_dialog(self):
+        """Show dialog for configuring network boundaries"""
+        from src.gui.dialogs import CrawlerRulesDialog
+        dialog = CrawlerRulesDialog(self, self.network_validator)
+        if dialog.result:
+            # Update network validator with new configuration
+            config_file = self.network_validator.config_dir / 'network_boundaries.yaml'
+            with open(config_file, 'w') as f:
+                yaml.dump(dialog.result, f, default_flow_style=False)
+            # Reload the configuration
+            self.network_validator.load_network_config()
