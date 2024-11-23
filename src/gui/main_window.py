@@ -123,74 +123,28 @@ class MainWindow:
         if save_credentials:
             self.credentials_manager.save_tacacs_credentials(username, password)
 
-        # Create progress window
-        progress_window = tk.Toplevel(self.root)
-        progress_window.title("Connecting to Devices")
-        progress_window.transient(self.root)
-        progress_window.grab_set()
-        
-        # Center the progress window
-        progress_window.geometry("+%d+%d" % (
-            self.root.winfo_rootx() + 50,
-            self.root.winfo_rooty() + 50
-        ))
-        
-        # Add progress bar and label
-        ttk.Label(progress_window, text="Connecting to devices...").pack(pady=10)
-        progress_var = tk.DoubleVar()
-        progress_bar = ttk.Progressbar(
-            progress_window, 
-            length=300, 
-            mode='determinate',
-            variable=progress_var
-        )
-        progress_bar.pack(padx=10, pady=5)
-        status_label = ttk.Label(progress_window, text="")
-        status_label.pack(pady=5)
-
-        # Update device parameters with credentials
-        selected_devices = [
-            self.device_manager.get_device_by_hostname(
+        # Get selected devices and prepare them
+        selected_devices = []
+        for item in selected_items:
+            device = self.device_manager.get_device_by_hostname(
                 self.device_tree.item(item)['values'][0]
             )
-            for item in selected_items
-        ]
+            if device:
+                device.username = username
+                device.password = password
+                # Print debug info
+                print(f"Connecting to {device.hostname}:")
+                print(f"Device type: {device.device_type}")
+                print(f"IP: {device.ip}")
+                selected_devices.append(device)
 
-        # Add credentials to each device
-        for device in selected_devices:
-            device.username = username
-            device.password = password
-
-        total_devices = len(selected_devices)
-        progress_step = 100.0 / total_devices if total_devices > 0 else 0
-
-        def connect_and_update():
-            for i, device in enumerate(selected_devices):
-                # Update progress
-                progress_var.set(i * progress_step)
-                status_label.config(text=f"Connecting to {device.hostname}...")
-                progress_window.update()
-
-                # Connect to device
-                device_params = {
-                    'device_type': device.device_type,
-                    'ip': device.ip,
-                    'username': device.username,
-                    'password': device.password,
-                }
-                device.connection = create_connection(device_params)
-                
-                # Update device status in tree
-                status = "Connected" if device.connection else "Connection Failed"
-                self.device_tree.update_device_status(device.hostname, status)
-                
-            # Close progress window
-            progress_window.destroy()
-
-        # Run connection process in a separate thread
-        import threading
-        connection_thread = threading.Thread(target=connect_and_update)
-        connection_thread.start()
+        # Connect devices using DeviceManager
+        connected_devices = self.device_manager.connect_devices(selected_devices)
+        
+        # Update status in tree
+        for device in connected_devices:
+            status = "Connected" if device.connection else "Connection Failed"
+            self.device_tree.update_device_status(device.hostname, status)
 
     def _select_all_devices(self):
         """Select all devices in the tree"""

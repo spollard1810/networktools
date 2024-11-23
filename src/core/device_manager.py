@@ -59,7 +59,7 @@ class DeviceManager:
 
     def connect_devices(self, selected_devices: List[Device]) -> List[Device]:
         def connect_device(device: Device):
-            # Add debug prints here
+            # Debug prints
             print(f"Device {device.hostname}:")
             print(f"Original device_type: {device.device_type}")
             netmiko_type = self.NETMIKO_TYPE_MAP.get(device.device_type, 'cisco_ios')
@@ -70,8 +70,19 @@ class DeviceManager:
                 'ip': device.ip,
                 'username': device.username,
                 'password': device.password,
+                'timeout': 10,
+                'fast_cli': True,
+                'session_timeout': 60
             }
-            device.connection = create_connection(device_params)
+            try:
+                device.connection = create_connection(device_params)
+                if device.connection:
+                    print(f"Successfully connected to {device.hostname}")
+                else:
+                    print(f"Failed to connect to {device.hostname}")
+            except Exception as e:
+                print(f"Error connecting to {device.hostname}: {str(e)}")
+                device.connection = None
             return device
 
         return run_threaded_operation(connect_device, selected_devices)
