@@ -12,6 +12,7 @@ from .widgets import DeviceTreeView
 from .dialogs import LoginDialog, LoadingDialog
 from src.core.connector import create_connection
 from src.features.custom_command import CustomCommandTab
+from src.features.route_validator import RouteValidatorTab
 import threading
 import queue
 
@@ -52,7 +53,8 @@ class MainWindow:
             "Local Routes": RouteAnalyzerTab(self.notebook, self.device_manager),
             "Audit": AuditorTab(self.notebook, self.device_manager),
             "Reports": ReporterTab(self.notebook, self.device_manager),
-            "Crawler": CrawlerTab(self.notebook, self.device_manager)
+            "Crawler": CrawlerTab(self.notebook, self.device_manager),
+            "Route Validator": RouteValidatorTab(self.notebook, self.device_manager)
         }
         
         for name, tab in self.tabs.items():
